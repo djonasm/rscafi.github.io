@@ -1,0 +1,31 @@
+{
+  "name": "rscafi.github.io",
+  "version": "0.0.0",
+  "description": "Ravan Scafi's website",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "metalsmith": "^2.1.0",
+    "metalsmith-markdown": "^0.2.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:rscafi/rscafi.github.io.git"
+  },
+  "keywords": [
+    "ravan",
+    "scafi",
+    "blog",
+    "website",
+    "rscafi"
+  ],
+  "author": "Ravan Scafi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rscafi/rscafi.github.io/issues"
+  },
+  "homepage": "https://github.com/rscafi/rscafi.github.io"
+}
