@@ -1,0 +1,75 @@
+<h1 id="-a-blog-about-building-a-blog-home-"><a href="../..">A blog about building a blog</a></h1>
+<h2 id="-chapter-1-a-layout-carved-in-stone-chapter-"><a href=".">Chapter 1 - A layout carved in stone</a></h2>
+<p>On the <a href="../chapter000.html">first chapter of this blog</a>, I was planning on giving a little visual structure to this current mess. But, thinking better about the aims that I have for the project, turns out that I needed to address first one thing that turned out to be more important.</p>
+<h3 id="the-goals">The goals</h3>
+<p>Remember that idea about a “theme switcher” that should allow us to change between the incremental versions of this very blog? Well, this approach would create a lot of garbage around chapters that would not be ready to receive the extra markup or styles that I&#39;d put on each version, killing the experience for visitors and for me, which is a bummer.</p>
+<p>Instead of doing it, I thought about a new structure that should be like this: every chapter will have the same layout as when it was conceived, not changing when new chapters arrives, so, navigating to each chapter would show the differences on layout, incrementally. It will be a way cooler and easier to absorb the whole idea about the blog. Also, it will make learning more fun since, whenever you are reading a new chapter, you will start to notice what changed at the time and thinking about the code involved, or at least I hope so.</p>
+<p>I’m guessing that perhaps it is not perfectly clear what I’m proposing, but, as I am writing new chapters, it will be easier to understand, so just go with it and eventually, you’ll see what I’m talking about, either because you navigated enough on the blog or because I&#39;m improving my writing skills and actually explaining it in a better way.</p>
+<h3 id="thinking-about-the-problem">Thinking about the problem</h3>
+<p>I had a few options to implement in order to allow different layouts on each chapter. One of them would be to only keep the compiled versions of old chapters and evolving the build script and assets, building only the latest chapter (and pages). This would be easier to maintain, but keeping only the compiled chapters would make changes really annoying.</p>
+<p>I’ve thought a lot about it, asked for opinions from colleagues at work, tried out some of them and, ultimately, decided to keep the original, raw files that are necessary for building each chapter.</p>
+<p>By taking this strategy, I can keep one master script to build chapters preserving their original build logic and guarantee that the layout will be always the same as when written. Let’s see how this goes, I hope that this is a good solution for the future.</p>
+<p>One thing that I also gave a lot of thoughts was: should I rename chapter 0 (<code>posts/chapter_000.md</code>), move it to the new folder (<code>chapters</code>) or should I keep it exactly on the same place and apply the new logic only to the newer chapters?
+By one hand, moving it would simplify my master script and make the project more organized. By the other hand, by not doing it, I could keep the project more faithful to the original source and also, it would make me think more about my decisions before actually implementing it, that could have good outcomes.
+I guess that I’m going with the first option anyway, since I don’t need to be so strict about it and will keep project easier to understand in comparison to files all around on the wrong places. I’m thinking a lot about the decisions, anyway, and this will not affect the layout of chapters, only its locations.</p>
+<p>So, with the strategy decided, it&#39;s time to finally build it.</p>
+<h3 id="bulding-it-">Bulding it!</h3>
+<p>To address the goals of this chapter, I needed to preserve the original build structure from chapter 0:</p>
+<pre><code>var Metalsmith = require(&#39;metalsmith&#39;);
+var markdown   = require(&#39;metalsmith-markdown&#39;);
+
+Metalsmith(__dirname)
+    .use(markdown())
+    .destination(&#39;./build&#39;)
+    .build(err =&gt; { if (err) console.log(err) })
+</code></pre><p>But also, adding more logic to build chapter 1 with more plugins. Calling <code>build()</code> twice, with different plugins/inputs, would totally erase the first build, so it wasn&#39;t an option.</p>
+<p>If you take a look, the only plugin that is applied to chapter 0 is markdown. I needed to keep this being applied, but not other plugins. I&#39;ve found <a href="https://github.com/ericgj/metalsmith-branch">Metalsmith Branch</a>, a plugin that allow different pipelines to be applied for different files, based on globing/filtering. In order to properly test the plugin, I&#39;ve decided to use <a href="https://github.com/segmentio/metalsmith-permalinks">Metalsmith Permalinks</a> on newer chapters, so after a little tinkering, I came up with the build script below:</p>
+<pre><code>var Metalsmith = require(&#39;metalsmith&#39;);
+var markdown   = require(&#39;metalsmith-markdown&#39;);
+var branch     = require(&#39;metalsmith-branch&#39;)
+var permalinks = require(&#39;metalsmith-permalinks&#39;)
+
+Metalsmith(__dirname)
+  .use(markdown())
+  .use(
+    branch()
+      .pattern(&#39;chapters/!(chapter000)*.html&#39;)
+      .use(permalinks(&#39;chapters/:title&#39;))
+  )
+  .build(err =&gt; { if (err) console.log(err) })
+</code></pre><p>I&#39;ve used a <a href="http://man7.org/linux/man-pages/man7/glob.7.html">glob complementation</a> (negation) to exclude only the first chapter from the use of permalinks, which is a good strategy in comparison to including all the chapters that I want to apply the permalinks, which will be all of the posterior chapters.
+On the next posts, I can use a similar strategy to exclude only the first and second post, which will be to add a range like <code>[0-1]</code> on the last <code>0</code> of the glob, like <code>.pattern(&#39;chapters/!(chapter00[0-1])*.html&#39;)</code>. It will escalate better.</p>
+<p>Also, did you noticed that I removed the <code>.destination(&#39;./build&#39;)</code> part? Turns out that this already was the default destination path, so there&#39;s no need to it.</p>
+<p>A little gotcha with the permalinks is that you need to apply it on the HTML files, not on the markdown sources. The pages of the blog are not receiving the permalinks yet, but since the only page that I have right now is the index, and I don&#39;t want a permalink on the index page, we are good to go for now.</p>
+<p>So, in the end, after a lot of searching and thinking, the solution was quite simple.</p>
+<h3 id="prologue">Prologue</h3>
+<p>I don’t know if <a href="http://www.metalsmith.io/">Metalsmith</a> will be the right choice for this blog, since it requires the whole build to run, what will make the process slower and slower as the blog grows. But, one good thing about it is that I can try to address and solve this problem (or change to another static site generator like <a href="https://gohugo.io/">hugo</a>, why not?). Let’s see how this goes.</p>
+<p>About git story, I’m <a href="https://github.com/blog/2141-squash-your-commits">squashing commits</a> per chapter, so it will be easier to track changes between them when reading the <a href="https://github.com/rscafi/rscafi.github.io/commits/source">repository history</a>.</p>
+<hr>
+<h2 id="change-b-log">Change<em>b</em>log</h2>
+<h3 id="writing-this-chapter-i-learned">Writing This Chapter I Learned</h3>
+<ol>
+<li><a href="http://grammarist.com/spelling/organise-organize/">You can write either <em>organize</em> or <em>organise</em>, both are correct and the first one is used mostly on North America</a>.</li>
+<li><a href="https://davidxmoody.com/host-any-static-site-with-github-pages/">Four new ways to “deploy” my website to GitHub Pages</a>.</li>
+<li><a href="http://stackoverflow.com/questions/10265798/determine-project-root-from-a-running-node-js-application">Determining the project root path of a node application</a> (even though I didn’t use it).</li>
+<li><a href="https://github.com/ericgj/metalsmith-branch">A way to use a single build script preserving original build for each chapters</a>.</li>
+<li><a href="https://github.com/segmentio/metalsmith-permalinks">How to create permalinks on metalsmith</a>.</li>
+<li><a href="http://man7.org/linux/man-pages/man7/glob.7.html">Complementation and ranges on Glob</a>.</li>
+</ol>
+<h3 id="progress-on-this-chapter">Progress On This Chapter</h3>
+<ol>
+<li>New chapter building structure.</li>
+<li>A script to rule them all, that will build the whole project, but preserving each chapter’s original build logic.</li>
+<li>Permalinks! (notice the url?)</li>
+</ol>
+<h3 id="coming-on-the-next-chapter">Coming On The Next Chapter</h3>
+<ul>
+<li>Assets structure</li>
+<li><a href="http://jade-lang.com/">Jade template engine</a></li>
+<li>Base CSS</li>
+<li>Analytics script</li>
+<li>Header</li>
+<li>Footer</li>
+</ul>
+<hr>
+<p>April 18, 2016 - by <a href="https://github.com/rscafi">Ravan Scafi</a> | <a href="https://github.com/rscafi/rscafi.github.io">View this project on GitHub</a> | <a href="mailto:hello@ravan.me">Contact me</a></p>
