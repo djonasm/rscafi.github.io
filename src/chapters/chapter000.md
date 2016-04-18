@@ -83,7 +83,7 @@ Fortunately, there are some motives that led me to finally starting it:
 April 12, 2016 - by [Ravan Scafi][14] | [View this project on GitHub][15]
 
 [home]: ..
-[chapter]: ./chapter_000.html
+[chapter]: ./chapter000.html
 [1]: https://www.digitalocean.com/
 [2]: https://education.github.com/pack
 [3]: https://www.sublimetext.com/3
